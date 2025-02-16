@@ -44,9 +44,9 @@ class Bot(Client):
             app.router.add_get("/", self.health_check)
             runner = web.AppRunner(app)
             await runner.setup()
-            site = web.TCPSite(runner, "0.0.0.0", 8080)
+            site = web.TCPSite(runner, "0.0.0.0", 8000)
             await site.start()
-            print("Health check server started on port 8080")
+            print("Health check server started on port 8000")
         except Exception as e:
             print(f"Failed to start health server: {e}")
 
@@ -60,7 +60,7 @@ class Bot(Client):
             try:
                 app = web.AppRunner(await web_server())
                 await app.setup()
-                await web.TCPSite(app, "0.0.0.0", 8080).start()
+                await web.TCPSite(app, "0.0.0.0", 8000).start()
                 print("Webhook server started")
             except Exception as e:
                 print(f"Failed to start webhook server: {e}")
