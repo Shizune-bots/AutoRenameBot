@@ -50,7 +50,8 @@ class Bot(Client):
         except Exception as e:
             print(f"Failed to start health server: {e}")
 
-    async def start(self):
+    async def start_bot(self):
+        """Start the bot properly"""
         await super().start()
         me = await self.get_me()
         self.mention = me.mention
