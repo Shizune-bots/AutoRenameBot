@@ -98,8 +98,7 @@ class Bot(Client):
 
         # Keep the bot running
         await asyncio.Event().wait()
-
-
-if __name__ == "__main__":
-    bot = Bot()
-    bot.run()  # Properly starts and keeps the bot running
+        
+        if __name__ == "__main__":
+            bot = Bot()
+            bot.run()  # Properly starts and keeps the bot running
