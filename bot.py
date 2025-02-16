@@ -95,7 +95,10 @@ class Bot(Client):
             except Exception as e:
                 print(f"Failed to send message in chat {chat_id}: {e}")
 
+await asyncio.Event().wait()  # Keeps the bot running
+
 
 if __name__ == "__main__":
     bot = Bot()
-    bot.run()
+    asyncio.run(bot.start_bot())  # Properly handle async execution
+                    
