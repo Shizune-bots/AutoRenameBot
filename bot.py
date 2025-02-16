@@ -15,7 +15,7 @@ import time
 pyrogram.utils.MIN_CHANNEL_ID = -1009147483647
 
 # Setting SUPPORT_CHAT directly here
-SUPPORT_CHAT = int(os.environ.get("SUPPORT_CHAT", "-1001953724858"))
+SUPPORT_CHAT = int(os.environ.get("SUPPORT_CHAT", "-1002419010340"))
 
 class Bot(Client):
 
@@ -32,17 +32,40 @@ class Bot(Client):
         # Initialize the bot's start time for uptime calculation
         self.start_time = time.time()
 
+        async def health_check(self, request):
+        """Handle health check requests"""
+        return web.Response(text="OK", status=200)
+
+    async def setup_health_server(self):
+        """Setup minimal server for health checks"""
+        app = web.Application()
+        app.router.add_get("/health", self.health_check)
+        app.router.add_get("/", self.health_check)
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, "0.0.0.0", 8080)
+        await site.start()
+        print("Health check server started on port 8080")
+
     async def start(self):
         await super().start()
         me = await self.get_me()
         self.mention = me.mention
-        self.username = me.username  
-        self.uptime = Config.BOT_UPTIME     
+        self.username = me.username
+        self.uptime = Config.BOT_UPTIME
+
         if Config.WEBHOOK:
+            # Start the full webhook server from route
             app = web.AppRunner(await web_server())
-            await app.setup()       
-            await web.TCPSite(app, "0.0.0.0", 8080).start()     
+            await app.setup()
+            await web.TCPSite(app, "0.0.0.0", 8080).start()
+            print("Webhook server started")
+        else:
+            # Start minimal health check server for Koyeb
+            await self.setup_health_server()
+        
         print(f"{me.first_name} Is Started.....✨️")
+            
 
         # Calculate uptime using timedelta
         uptime_seconds = int(time.time() - self.start_time)
