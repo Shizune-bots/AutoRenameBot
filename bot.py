@@ -32,40 +32,42 @@ class Bot(Client):
         # Initialize the bot's start time for uptime calculation
         self.start_time = time.time()
 
-        async def health_check(self, request):
+    async def health_check(self, request):
         """Handle health check requests"""
         return web.Response(text="OK", status=200)
 
     async def setup_health_server(self):
         """Setup minimal server for health checks"""
-        app = web.Application()
-        app.router.add_get("/health", self.health_check)
-        app.router.add_get("/", self.health_check)
-        runner = web.AppRunner(app)
-        await runner.setup()
-        site = web.TCPSite(runner, "0.0.0.0", 8080)
-        await site.start()
-        print("Health check server started on port 8080")
+        try:
+            app = web.Application()
+            app.router.add_get("/health", self.health_check)
+            app.router.add_get("/", self.health_check)
+            runner = web.AppRunner(app)
+            await runner.setup()
+            site = web.TCPSite(runner, "0.0.0.0", 8080)
+            await site.start()
+            print("Health check server started on port 8080")
+        except Exception as e:
+            print(f"Failed to start health server: {e}")
 
     async def start(self):
         await super().start()
         me = await self.get_me()
         self.mention = me.mention
         self.username = me.username
-        self.uptime = Config.BOT_UPTIME
 
         if Config.WEBHOOK:
-            # Start the full webhook server from route
-            app = web.AppRunner(await web_server())
-            await app.setup()
-            await web.TCPSite(app, "0.0.0.0", 8080).start()
-            print("Webhook server started")
+            try:
+                app = web.AppRunner(await web_server())
+                await app.setup()
+                await web.TCPSite(app, "0.0.0.0", 8080).start()
+                print("Webhook server started")
+            except Exception as e:
+                print(f"Failed to start webhook server: {e}")
         else:
-            # Start minimal health check server for Koyeb
             await self.setup_health_server()
         
-        print(f"{me.first_name} Is Started.....✨️")
-            
+        print(f"{me.first_name} is Started.....✨️")
 
         # Calculate uptime using timedelta
         uptime_seconds = int(time.time() - self.start_time)
@@ -77,21 +79,19 @@ class Bot(Client):
                 date = curr.strftime('%d %B, %Y')
                 time_str = curr.strftime('%I:%M:%S %p')
                 
-                # Send the message with the photo
                 await self.send_photo(
                     chat_id=chat_id,
                     photo=Config.START_PIC,
                     caption=(
-                        "**ᴀɴʏᴀ ɪs ʀᴇsᴛᴀʀᴛᴇᴅ ᴀɢᴀɪɴ  !**\n\n"
-                        f"ɪ ᴅɪᴅɴ'ᴛ sʟᴇᴘᴛ sɪɴᴄᴇ​: `{uptime_string}`"
+                        "**Anya is Restarted Again!**\n\n"
+                        f"I didn't sleep since: `{uptime_string}`"
                     ),
                     reply_markup=InlineKeyboardMarkup(
                         [[
-                            InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇs", url="https://t.me/codeflix_bots")
+                            InlineKeyboardButton("Updates", url="https://t.me/codeflix_bots")
                         ]]
                     )
                 )
-
             except Exception as e:
                 print(f"Failed to send message in chat {chat_id}: {e}")
 
